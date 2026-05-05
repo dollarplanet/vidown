@@ -20,16 +20,6 @@ jobs:
       - name: Install dependencies
         run: pip install pyinstaller
 
-      - name: Create specification file
-        run: |
-          cat > vidown.spec << 'EOF'
-block_cipher = None
-a = Analysis(['main.py'], pathex=[], binaries=[], datas=[], hiddenimports=['PySide6','yt_dlp'])
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
-exe = EXE(pyz, a.scripts, [], name='vidown', console=False, upx=True)
-coll = COLLECT(exe, a.binaries, a.zipfiles, a.datas, name='vidown', upx=True)
-EOF
-
       - name: Build
         run: |
           pyinstaller vidown.spec --distpath dist --workpath dist/build --specpath dist
@@ -58,16 +48,6 @@ EOF
 
       - name: Install dependencies
         run: pip install pyinstaller
-
-      - name: Create specification file
-        run: |
-          Set-Content -Path vidown.spec -Value @"
-block_cipher = None
-a = Analysis(['main.py'], pathex=[], binaries=[], datas=[], hiddenimports=['PySide6','yt_dlp'])
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
-exe = EXE(pyz, a.scripts, [], name='vidown', console=False, upx=True)
-coll = COLLECT(exe, a.binaries, a.zipfiles, a.datas, name='vidown', upx=True)
-"@
 
       - name: Build
         run: |
