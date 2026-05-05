@@ -72,7 +72,7 @@ echo print(f"Created ffmpeg folder: {ffmpeg_dir}")
 ) > "%APP_NAME%.spec"
 
 REM Run PyInstaller
-pyinstaller "%APP_NAME%.spec" --distpath "%DIST_DIR%" --workpath "%DIST_DIR%\build" --specpath "%DIST_DIR%"
+pyinstaller "%APP_NAME%.spec" --distpath "%DIST_DIR%" --workpath "%DIST_DIR%\build"
 
 REM Create ffmpeg folder in dist
 if not exist "%DIST_DIR%\vidown\ffmpeg" mkdir "%DIST_DIR%\vidown\ffmpeg"

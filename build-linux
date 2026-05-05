@@ -74,7 +74,7 @@ print(f"Created ffmpeg folder: {ffmpeg_dir}")
 SPEC_EOF
 
 # Run PyInstaller
-pyinstaller "${APP_NAME}.spec" --distpath "$DIST_DIR" --workpath "$DIST_DIR/build" --specpath "$DIST_DIR"
+pyinstaller "${APP_NAME}.spec" --distpath "$DIST_DIR" --workpath "$DIST_DIR/build"
 
 # Create ffmpeg folder in dist
 mkdir -p "$DIST_DIR/vidown/ffmpeg"
