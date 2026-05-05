@@ -1,21 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files, collect_dynamic_libs
+
 block_cipher = None
 
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
-    hiddenimports=[
-        'PySide6',
-        'PySide6.QtCore',
-        'PySide6.QtGui',
-        'PySide6.QtWidgets',
-        'PySide6.QtCore.Qt',
-        'PySide6.QtCore.QObject',
-        'yt_dlp',
-    ],
+    datas=collect_data_files('PySide6') + collect_data_files('yt_dlp'),
+    hiddenimports=collect_submodules('PySide6') + collect_submodules('yt_dlp'),
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

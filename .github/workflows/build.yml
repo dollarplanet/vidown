@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pyinstaller yt-dlp
+          pip install pyinstaller PySide6 yt-dlp
 
       - name: Build
         run: |
