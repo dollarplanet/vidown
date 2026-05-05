@@ -1,9 +1,5 @@
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton,
-    QComboBox, QRadioButton, QTimeEdit, QFileDialog, QTextEdit,
-    QProgressBar, QGroupBox, QMessageBox, QCheckBox
-)
-from PySide6.QtCore import Qt, QTime
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
 import json
 import os
 
@@ -11,101 +7,80 @@ import os
 SETTINGS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "value.json")
 
 
-class MainWindow(QWidget):
+class MainWindow:
     def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Vidown - YouTube Downloader")
-        self.setMinimumWidth(500)
+        self.root = tk.Tk()
+        self.root.title("Vidown - YouTube Downloader")
+        self.root.resizable(False, False)
+        self._start_enabled = False
+        self._end_enabled = False
         self.setup_ui()
         self.load_settings()
+        
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def setup_ui(self):
-        main_layout = QVBoxLayout()
-        main_layout.setSpacing(12)
-        main_layout.setContentsMargins(16, 16, 16, 16)
+        main_frame = ttk.Frame(self.root, padding="12")
+        main_frame.pack(fill=tk.BOTH, expand=True)
 
-        url_layout = QVBoxLayout()
-        url_layout.addWidget(QLabel("Video URL"))
-        self.url_input = QLineEdit()
-        self.url_input.setPlaceholderText("https://www.youtube.com/watch?v=...")
-        url_layout.addWidget(self.url_input)
-        main_layout.addLayout(url_layout)
+        ttk.Label(main_frame, text="Video URL").pack(anchor=tk.W)
+        self.url_input = ttk.Entry(main_frame, width=60)
+        self.url_input.pack(fill=tk.X, pady=(0, 12))
 
-        time_group = QGroupBox("Start / End Time (HH:MM:SS)")
-        time_layout = QVBoxLayout()
+        time_frame = ttk.LabelFrame(main_frame, text="Start / End Time (HH:MM:SS)", padding="8")
+        time_frame.pack(fill=tk.X, pady=(0, 12))
 
-        start_layout = QHBoxLayout()
-        self.start_checkbox = QCheckBox("Start:")
-        self.start_time_input = QLineEdit()
-        self.start_time_input.setPlaceholderText("00:00:00")
-        start_layout.addWidget(self.start_checkbox)
-        start_layout.addWidget(self.start_time_input)
-        time_layout.addLayout(start_layout)
+        self.start_var = tk.BooleanVar(value=False)
+        self.start_checkbox = ttk.Checkbutton(time_frame, text="Start:", variable=self.start_var, command=self.toggle_start_time)
+        self.start_checkbox.pack(anchor=tk.W)
+        self.start_time_input = ttk.Entry(time_frame, width=15, state=tk.DISABLED)
+        self.start_time_input.pack(anchor=tk.W, padx=(80, 0), pady=(0, 8))
 
-        end_layout = QHBoxLayout()
-        self.end_checkbox = QCheckBox("End:")
-        self.end_time_input = QLineEdit()
-        self.end_time_input.setPlaceholderText("00:00:00")
-        end_layout.addWidget(self.end_checkbox)
-        end_layout.addWidget(self.end_time_input)
-        time_layout.addLayout(end_layout)
+        self.end_var = tk.BooleanVar(value=False)
+        self.end_checkbox = ttk.Checkbutton(time_frame, text="End:", variable=self.end_var, command=self.toggle_end_time)
+        self.end_checkbox.pack(anchor=tk.W)
+        self.end_time_input = ttk.Entry(time_frame, width=15, state=tk.DISABLED)
+        self.end_time_input.pack(anchor=tk.W, padx=(80, 0), pady=(0, 8))
 
-        time_group.setLayout(time_layout)
-        main_layout.addWidget(time_group)
+        mode_frame = ttk.LabelFrame(main_frame, text="Mode", padding="8")
+        mode_frame.pack(fill=tk.X, pady=(0, 12))
 
-        mode_group = QGroupBox("Mode")
-        mode_layout = QHBoxLayout()
-        self.video_radio = QRadioButton("Video")
-        self.video_radio.setChecked(True)
-        self.audio_radio = QRadioButton("Audio")
-        mode_layout.addWidget(self.video_radio)
-        mode_layout.addWidget(self.audio_radio)
-        mode_layout.addStretch()
-        mode_group.setLayout(mode_layout)
-        main_layout.addWidget(mode_group)
+        self.mode_var = tk.StringVar(value="video")
+        self.video_radio = ttk.Radiobutton(mode_frame, text="Video", value="video", variable=self.mode_var)
+        self.video_radio.pack(side=tk.LEFT)
+        self.audio_radio = ttk.Radiobutton(mode_frame, text="Audio", value="audio", variable=self.mode_var)
+        self.audio_radio.pack(side=tk.LEFT, padx=(12, 0))
 
-        quality_layout = QVBoxLayout()
-        quality_layout.addWidget(QLabel("Quality"))
-        self.quality_combo = QComboBox()
-        self.quality_combo.addItems([
-            "Best (HD)",
-            "1080p",
-            "720p",
-            "480p",
-            "360p",
-        ])
-        quality_layout.addWidget(self.quality_combo)
-        main_layout.addLayout(quality_layout)
+        ttk.Label(main_frame, text="Quality").pack(anchor=tk.W)
+        self.quality_combo = ttk.Combobox(main_frame, values=["Best (HD)", "1080p", "720p", "480p", "360p"], state="readonly")
+        self.quality_combo.set("Best (HD)")
+        self.quality_combo.pack(fill=tk.X, pady=(0, 12))
 
-        output_layout = QVBoxLayout()
-        output_layout.addWidget(QLabel("Output Folder"))
-        output_folder_layout = QHBoxLayout()
-        self.output_folder_input = QLineEdit()
-        self.output_folder_input.setText("/home/riyan/Downloads")
-        output_folder_layout.addWidget(self.output_folder_input)
-        self.browse_button = QPushButton("Browse")
-        self.browse_button.clicked.connect(self.browse_folder)
-        output_folder_layout.addWidget(self.browse_button)
-        output_layout.addLayout(output_folder_layout)
-        main_layout.addLayout(output_layout)
+        ttk.Label(main_frame, text="Output Folder").pack(anchor=tk.W)
+        folder_frame = ttk.Frame(main_frame)
+        folder_frame.pack(fill=tk.X, pady=(0, 12))
+        self.output_folder_input = ttk.Entry(folder_frame)
+        self.output_folder_input.insert(0, os.path.expanduser("~/Downloads"))
+        self.output_folder_input.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(folder_frame, text="Browse", command=self.browse_folder).pack(side=tk.LEFT, padx=(8, 0))
 
-        self.download_button = QPushButton("Download")
-        self.download_button.clicked.connect(self.start_download)
-        main_layout.addWidget(self.download_button)
+        self.download_button = ttk.Button(main_frame, text="Download", command=self.start_download)
+        self.download_button.pack(fill=tk.X, pady=(0, 12))
 
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
-        main_layout.addWidget(self.progress_bar)
+        self.progress_bar = ttk.Progressbar(main_frame, mode="indeterminate")
+        self.progress_bar.pack(fill=tk.X, pady=(0, 12))
 
-        log_layout = QVBoxLayout()
-        log_layout.addWidget(QLabel("Log"))
-        self.log_output = QTextEdit()
-        self.log_output.setReadOnly(True)
-        self.log_output.setMaximumHeight(150)
-        log_layout.addWidget(self.log_output)
-        main_layout.addLayout(log_layout)
+        ttk.Label(main_frame, text="Log").pack(anchor=tk.W)
+        self.log_output = tk.Text(main_frame, height=8, state=tk.DISABLED, wrap=tk.WORD)
+        self.log_output.pack(fill=tk.BOTH, expand=True)
 
-        self.setLayout(main_layout)
+    def toggle_start_time(self):
+        self._start_enabled = self.start_var.get()
+        self.start_time_input.config(state=tk.NORMAL if self._start_enabled else tk.DISABLED)
+
+    def toggle_end_time(self):
+        self._end_enabled = self.end_var.get()
+        self.end_time_input.config(state=tk.NORMAL if self._end_enabled else tk.DISABLED)
 
     def load_settings(self):
         if not os.path.exists(SETTINGS_FILE):
@@ -115,27 +90,38 @@ class MainWindow(QWidget):
                 s = json.load(f)
         except (json.JSONDecodeError, IOError):
             return
-        self.url_input.setText(s.get("url", ""))
-        self.start_checkbox.setChecked(s.get("start_enabled", False))
-        self.start_time_input.setText(s.get("start_time", ""))
-        self.end_checkbox.setChecked(s.get("end_enabled", False))
-        self.end_time_input.setText(s.get("end_time", ""))
-        if s.get("mode") == "audio":
-            self.audio_radio.setChecked(True)
-        else:
-            self.video_radio.setChecked(True)
+        
+        self.url_input.delete(0, tk.END)
+        self.url_input.insert(0, s.get("url", ""))
+        
+        start_enabled = s.get("start_enabled", False)
+        self.start_var.set(start_enabled)
+        self.toggle_start_time()
+        
+        end_enabled = s.get("end_enabled", False)
+        self.end_var.set(end_enabled)
+        self.toggle_end_time()
+        
+        self.start_time_input.delete(0, tk.END)
+        self.start_time_input.insert(0, s.get("start_time", ""))
+        self.end_time_input.delete(0, tk.END)
+        self.end_time_input.insert(0, s.get("end_time", ""))
+        
+        mode = s.get("mode", "video")
+        self.mode_var.set(mode)
+        
         quality = s.get("quality", "Best (HD)")
-        index = self.quality_combo.findText(quality)
-        if index >= 0:
-            self.quality_combo.setCurrentIndex(index)
-        self.output_folder_input.setText(s.get("output_folder", "/home/riyan/Downloads"))
+        self.quality_combo.set(quality)
+        
+        self.output_folder_input.delete(0, tk.END)
+        self.output_folder_input.insert(0, s.get("output_folder", os.path.expanduser("~/Downloads")))
 
     def save_settings(self):
         s = {
             "url": self.get_url(),
-            "start_enabled": self.start_checkbox.isChecked(),
+            "start_enabled": self.start_var.get(),
             "start_time": self.get_start_time_str(),
-            "end_enabled": self.end_checkbox.isChecked(),
+            "end_enabled": self.end_var.get(),
             "end_time": self.get_end_time_str(),
             "mode": self.get_mode(),
             "quality": self.get_quality(),
@@ -145,57 +131,66 @@ class MainWindow(QWidget):
             json.dump(s, f)
 
     def browse_folder(self):
-        folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
+        folder = filedialog.askdirectory(title="Select Output Folder")
         if folder:
-            self.output_folder_input.setText(folder)
+            self.output_folder_input.delete(0, tk.END)
+            self.output_folder_input.insert(0, folder)
 
     def get_start_time_str(self):
-        if not self.start_checkbox.isChecked():
+        if not self.start_var.get():
             return ""
-        return self.start_time_input.text().strip()
+        return self.start_time_input.get().strip()
 
     def get_end_time_str(self):
-        if not self.end_checkbox.isChecked():
+        if not self.end_var.get():
             return ""
-        return self.end_time_input.text().strip()
+        return self.end_time_input.get().strip()
 
     def get_mode(self):
-        return "audio" if self.audio_radio.isChecked() else "video"
+        return self.mode_var.get()
 
     def get_quality(self):
-        return self.quality_combo.currentText()
+        return self.quality_combo.get()
 
     def get_output_folder(self):
-        return self.output_folder_input.text().strip()
+        return self.output_folder_input.get().strip()
 
     def get_url(self):
-        return self.url_input.text().strip()
+        return self.url_input.get().strip()
 
     def set_downloading(self, is_downloading):
-        self.download_button.setEnabled(not is_downloading)
-        self.url_input.setEnabled(not is_downloading)
-        self.start_checkbox.setEnabled(not is_downloading)
-        self.start_time_input.setEnabled(not is_downloading)
-        self.end_checkbox.setEnabled(not is_downloading)
-        self.end_time_input.setEnabled(not is_downloading)
-        self.video_radio.setEnabled(not is_downloading)
-        self.audio_radio.setEnabled(not is_downloading)
-        self.quality_combo.setEnabled(not is_downloading)
-        self.output_folder_input.setEnabled(not is_downloading)
-        self.browse_button.setEnabled(not is_downloading)
-        self.progress_bar.setVisible(is_downloading)
+        state = tk.DISABLED if is_downloading else tk.NORMAL
+        self.download_button.config(state=state)
+        self.url_input.config(state=state)
+        self.start_checkbox.config(state=state)
+        self.start_time_input.config(state=state if self._start_enabled else tk.DISABLED)
+        self.end_checkbox.config(state=state)
+        self.end_time_input.config(state=state if self._end_enabled else tk.DISABLED)
+        self.video_radio.config(state=state)
+        self.audio_radio.config(state=state)
+        self.quality_combo.config(state=state)
+        self.output_folder_input.config(state=state)
+        
         if is_downloading:
-            self.progress_bar.setRange(0, 0)
+            self.progress_bar.start(10)
         else:
-            self.progress_bar.setRange(0, 1)
-            self.progress_bar.setValue(0)
+            self.progress_bar.stop()
 
     def show_error(self, message):
-        QMessageBox.critical(self, "Error", message)
+        messagebox.showerror("Error", message)
 
     def show_info(self, message):
-        QMessageBox.information(self, "Info", message)
+        messagebox.showinfo("Info", message)
 
-    def closeEvent(self, event):
+    def append_log(self, message):
+        self.log_output.config(state=tk.NORMAL)
+        self.log_output.insert(tk.END, message + "\n")
+        self.log_output.see(tk.END)
+        self.log_output.config(state=tk.DISABLED)
+
+    def on_close(self):
         self.save_settings()
-        super().closeEvent(event)
+        self.root.destroy()
+
+    def run(self):
+        self.root.mainloop()

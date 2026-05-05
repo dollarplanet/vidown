@@ -3,8 +3,8 @@ import sys
 import shutil
 import zipfile
 import urllib.request
+import threading
 from datetime import datetime
-from PySide6.QtCore import QThread, Signal
 import yt_dlp
 import tempfile
 
@@ -148,11 +148,8 @@ def get_temp_config():
     return config_file.name
 
 
-class DownloaderWorker(QThread):
-    progress_updated = Signal(str)
-    download_finished = Signal(bool, str)
-
-    def __init__(self, url, output_folder, mode, quality, start_time, end_time):
+class DownloaderWorker(threading.Thread):
+    def __init__(self, url, output_folder, mode, quality, start_time, end_time, progress_callback=None, finished_callback=None):
         super().__init__()
         self.url = url
         self.output_folder = output_folder
@@ -160,6 +157,8 @@ class DownloaderWorker(QThread):
         self.quality = quality
         self.start_time = start_time
         self.end_time = end_time
+        self.progress_callback = progress_callback
+        self.finished_callback = finished_callback
         self._cancelled = False
 
     def cancel(self):
@@ -168,31 +167,38 @@ class DownloaderWorker(QThread):
     def run(self):
         try:
             if not self.url.strip():
-                self.download_finished.emit(False, "URL cannot be empty")
+                if self.finished_callback:
+                    self.finished_callback(False, "URL cannot be empty")
                 return
 
             if not os.path.isdir(self.output_folder):
-                self.download_finished.emit(False, f"Output folder does not exist: {self.output_folder}")
+                if self.finished_callback:
+                    self.finished_callback(False, f"Output folder does not exist: {self.output_folder}")
                 return
 
             ffmpeg_path = get_ffmpeg_path()
             if not ffmpeg_path:
-                self.progress_updated.emit("FFmpeg not found, downloading...")
-                ffmpeg_path = download_ffmpeg(lambda msg: self.progress_updated.emit(msg))
+                if self.progress_callback:
+                    self.progress_callback("FFmpeg not found, downloading...")
+                ffmpeg_path = download_ffmpeg(self.progress_callback)
                 if not ffmpeg_path:
-                    self.download_finished.emit(False, "Failed to download FFmpeg")
+                    if self.finished_callback:
+                        self.finished_callback(False, "Failed to download FFmpeg")
                     return
 
             opts = self.build_options(ffmpeg_path)
-            self.progress_updated.emit(f"Downloading: {self.url}")
+            if self.progress_callback:
+                self.progress_callback(f"Downloading: {self.url}")
 
             with yt_dlp.YoutubeDL(opts) as ydl:
                 ydl.download([self.url])
 
-            self.download_finished.emit(True, "Download completed successfully")
+            if self.finished_callback:
+                self.finished_callback(True, "Download completed successfully")
 
         except Exception as e:
-            self.download_finished.emit(False, f"Error: {str(e)}")
+            if self.finished_callback:
+                self.finished_callback(False, f"Error: {str(e)}")
 
     def build_options(self, ffmpeg_path=None):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -258,7 +264,7 @@ class DownloaderWorker(QThread):
 
         if d["status"] == "downloading":
             percent = d.get("_percent_str", "")
-            if percent:
-                self.progress_updated.emit(f"Downloading: {percent}")
-        elif d["status"] == "finished":
-            self.progress_updated.emit("Downloaded: " + d.get("filename", ""))
+            if percent and self.progress_callback:
+                self.progress_callback(f"Downloading: {percent}")
+        elif d["status"] == "finished" and self.progress_callback:
+            self.progress_callback("Downloaded: " + d.get("filename", ""))

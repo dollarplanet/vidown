@@ -1,6 +1,10 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-from PyInstaller.utils.hooks import collect_submodules, collect_data_files, collect_dynamic_libs
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
+import sys
+
+# For tkinter (stdlib), we need to include all tkinter modules
+tkinter_modules = collect_submodules('tkinter')
 
 block_cipher = None
 
@@ -8,8 +12,8 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=collect_data_files('PySide6') + collect_data_files('yt_dlp'),
-    hiddenimports=collect_submodules('PySide6') + collect_submodules('yt_dlp'),
+    datas=collect_data_files('yt_dlp'),
+    hiddenimports=collect_submodules('yt_dlp') + tkinter_modules,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
