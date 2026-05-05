@@ -18,4 +18,10 @@ env/
 *.log
 .pytest_cache/
 .mypy_cache/
+
+# Settings
 value.json
+
+# Bundled ffmpeg binaries (ignore actual binaries, keep README)
+ffmpeg/**/ffmpeg
+ffmpeg/**/ffmpeg.exe
