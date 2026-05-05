@@ -1,19 +1,48 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 from PyInstaller.utils.hooks import collect_submodules, collect_data_files
-import sys
-
-# For tkinter (stdlib), we need to include all tkinter modules
-tkinter_modules = collect_submodules('tkinter')
 
 block_cipher = None
+
+# Collect yt-dlp modules (this should work)
+yt_modules = collect_submodules('yt_dlp')
+
+# Tkinter modules (std lib, hardcoded list since it's always available in Python builds with tkinter)
+tkinter_modules = [
+    'tkinter',
+    'tkinter.__init__',
+    'tkinter._fix',
+    'tkinter.colorchooser',
+    'tkinter.commondialog',
+    'tkinter.dialog',
+    'tkinter.dnd',
+    'tkinter.filedialog',
+    'tkinter.font',
+    'tkinter.messagebox',
+    'tkinter.scrolledtext',
+    'tkinter.simpledialog',
+    'tkinter.tix',
+    'tkinter.ttk',
+    'tkinter.tksimplebeg',
+]
+
+# Get all available modules (in case collect_submodules works)
+try:
+    import tkinter
+    tk_modules = collect_submodules('tkinter')
+    # Add any additional found modules
+    for mod in tk_modules:
+        if mod not in tkinter_modules:
+            tkinter_modules.append(mod)
+except Exception:
+    pass
 
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
     datas=collect_data_files('yt_dlp'),
-    hiddenimports=collect_submodules('yt_dlp') + tkinter_modules,
+    hiddenimports=yt_modules + tkinter_modules,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
