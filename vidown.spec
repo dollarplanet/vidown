@@ -7,7 +7,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports=['PySide6', 'yt_dlp'],
+    hiddenimports=['PySide6', 'PySide6.QtCore', 'PySide6.QtGui', 'PySide6.QtWidgets', 'yt_dlp'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -50,3 +50,9 @@ coll = COLLECT(
     upx_exclude=[],
     name='vidown',
 )
+
+# Create ffmpeg folder
+import os
+ffmpeg_dir = os.path.join('dist', 'vidown', 'ffmpeg')
+os.makedirs(ffmpeg_dir, exist_ok=True)
+print(f"Created ffmpeg folder: {ffmpeg_dir}")
