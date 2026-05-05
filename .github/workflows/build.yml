@@ -38,32 +38,32 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # build-windows:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
 
-      - name: Install dependencies
-        run: |
-          pip install pyinstaller yt-dlp
+  #     - name: Install dependencies
+  #       run: |
+  #         pip install pyinstaller yt-dlp
 
-      - name: Build
-        run: |
-          pyinstaller vidown.spec --distpath dist --workpath dist\build
-          New-Item -ItemType Directory -Path dist\vidown\ffmpeg -Force
+  #     - name: Build
+  #       run: |
+  #         pyinstaller vidown.spec --distpath dist --workpath dist\build
+  #         New-Item -ItemType Directory -Path dist\vidown\ffmpeg -Force
 
-      - name: Create archive
-        run: Compress-Archive -Path dist\vidown -DestinationPath vidown-${{ github.ref_name }}-win.zip
+  #     - name: Create archive
+  #       run: Compress-Archive -Path dist\vidown -DestinationPath vidown-${{ github.ref_name }}-win.zip
 
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: vidown-${{ github.ref_name }}-win.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Upload to Release
+  #       uses: softprops/action-gh-release@v2
+  #       with:
+  #         files: vidown-${{ github.ref_name }}-win.zip
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
