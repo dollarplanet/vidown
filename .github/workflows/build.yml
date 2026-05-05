@@ -6,40 +6,8 @@ on:
       - 'v*'
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          pip install pyinstaller PySide6 yt-dlp
-
-      - name: Build
-        run: |
-          pyinstaller vidown.spec --distpath dist --workpath dist/build
-          mkdir -p dist/vidown/ffmpeg
-
-      - name: Create archive
-        run: |
-          cd dist
-          tar -cvf ../vidown-${{ github.ref_name }}-linux.tar.xz vidown
-
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: vidown-${{ github.ref_name }}-linux.tar.xz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # build-windows:
-  #   runs-on: windows-latest
+  # build-linux:
+  #   runs-on: ubuntu-latest
   #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v4
@@ -51,19 +19,51 @@ jobs:
 
   #     - name: Install dependencies
   #       run: |
-  #         pip install pyinstaller yt-dlp
+  #         pip install pyinstaller PySide6 yt-dlp
 
   #     - name: Build
   #       run: |
-  #         pyinstaller vidown.spec --distpath dist --workpath dist\build
-  #         New-Item -ItemType Directory -Path dist\vidown\ffmpeg -Force
+  #         pyinstaller vidown.spec --distpath dist --workpath dist/build
+  #         mkdir -p dist/vidown/ffmpeg
 
   #     - name: Create archive
-  #       run: Compress-Archive -Path dist\vidown -DestinationPath vidown-${{ github.ref_name }}-win.zip
+  #       run: |
+  #         cd dist
+  #         tar -cvf ../vidown-${{ github.ref_name }}-linux.tar.xz vidown
 
   #     - name: Upload to Release
   #       uses: softprops/action-gh-release@v2
   #       with:
-  #         files: vidown-${{ github.ref_name }}-win.zip
+  #         files: vidown-${{ github.ref_name }}-linux.tar.xz
   #       env:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller yt-dlp
+
+      - name: Build
+        run: |
+          pyinstaller vidown.spec --distpath dist --workpath dist\build
+          New-Item -ItemType Directory -Path dist\vidown\ffmpeg -Force
+
+      - name: Create archive
+        run: Compress-Archive -Path dist\vidown -DestinationPath vidown-${{ github.ref_name }}-win.zip
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: vidown-${{ github.ref_name }}-win.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
