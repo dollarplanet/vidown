@@ -1,7 +1,8 @@
-import subprocess
 import os
-import re
-from PySide6.QtCore import QObject, Signal, QThread
+from datetime import datetime
+from PySide6.QtCore import QThread, Signal
+import yt_dlp
+import tempfile
 
 
 QUALITY_FORMATS = {
@@ -11,6 +12,19 @@ QUALITY_FORMATS = {
     "480p": "bv[height<=480]+ba/b",
     "360p": "bv[height<=360]+ba/b",
 }
+
+
+def get_temp_config():
+    node_path = os.path.expanduser("~/.nvm/versions/node/v22.21.1/bin/node")
+    if os.path.exists(node_path):
+        config = f"--js-runtimes=node:{node_path}"
+    else:
+        config = ""
+    
+    config_file = tempfile.NamedTemporaryFile(mode='w', suffix='.conf', delete=False)
+    config_file.write(config)
+    config_file.close()
+    return config_file.name
 
 
 class DownloaderWorker(QThread):
@@ -40,59 +54,77 @@ class DownloaderWorker(QThread):
                 self.download_finished.emit(False, f"Output folder does not exist: {self.output_folder}")
                 return
 
-            cmd = self.build_command()
+            opts = self.build_options()
+            self.progress_updated.emit(f"Downloading: {self.url}")
 
-            self.progress_updated.emit(f"Running: {' '.join(cmd)}\n")
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                ydl.download([self.url])
 
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
-                universal_newlines=True
-            )
-
-            for line in process.stdout:
-                if self._cancelled:
-                    process.terminate()
-                    self.download_finished.emit(False, "Download cancelled")
-                    return
-                self.progress_updated.emit(line.strip())
-
-            process.wait()
-
-            if process.returncode == 0:
-                self.download_finished.emit(True, "Download completed successfully")
-            else:
-                self.download_finished.emit(False, f"Download failed with exit code {process.returncode}")
+            self.download_finished.emit(True, "Download completed successfully")
 
         except Exception as e:
             self.download_finished.emit(False, f"Error: {str(e)}")
 
-    def build_command(self):
-        cmd = ["yt-dlp"]
+    def build_options(self):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_template = os.path.join(self.output_folder, f"%(title)s_{timestamp}.%(ext)s")
 
-        format_spec = QUALITY_FORMATS.get(self.quality, "best")
+        opts = {
+            "outtmpl": output_template,
+            "format": QUALITY_FORMATS.get(self.quality, "best"),
+            "quiet": True,
+            "no_warnings": True,
+            "progress_hooks": [self.progress_hook],
+        }
+
+        config_file = get_temp_config()
+        opts["config_location"] = config_file
 
         if self.mode == "audio":
-            cmd.extend(["-x", "--audio-format", "mp3"])
+            opts["postprocessors"] = [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+            }]
         else:
-            cmd.extend(["--merge-output-format", "mp4"])
-
-        cmd.extend(["-f", format_spec])
+            opts["merge_output_format"] = "mp4"
 
         if self.start_time or self.end_time:
-            section = ""
-            if self.start_time:
-                section = f"*{self.start_time}-"
-            if self.end_time and section:
-                section += f"{self.end_time}"
-            cmd.extend(["--download-sections", section])
+            start_seconds = self.parse_time(self.start_time)
+            end_seconds = self.parse_time(self.end_time)
+            opts["download_ranges"] = self._make_ranges(start_seconds, end_seconds)
 
-        output_template = os.path.join(self.output_folder, "%(title)s.%(ext)s")
-        cmd.extend(["-o", output_template])
+        return opts
 
-        cmd.append(self.url)
+    def parse_time(self, time_str):
+        if not time_str:
+            return None
+        parts = time_str.split(":")
+        if len(parts) == 3:
+            h, m, s = map(int, parts)
+            return h * 3600 + m * 60 + s
+        elif len(parts) == 2:
+            m, s = map(int, parts)
+            return m * 60 + s
+        return 0
 
-        return cmd
+    def _make_ranges(self, start, end):
+        def get_ranges(info, ydl):
+            ranges = []
+            if start is not None:
+                range_dict = {"start_time": start}
+                if end is not None:
+                    range_dict["end_time"] = end
+                ranges.append(range_dict)
+            return tuple(ranges)
+        return get_ranges
+
+    def progress_hook(self, d):
+        if self._cancelled:
+            raise Exception("Download cancelled")
+
+        if d["status"] == "downloading":
+            percent = d.get("_percent_str", "")
+            if percent:
+                self.progress_updated.emit(f"Downloading: {percent}")
+        elif d["status"] == "finished":
+            self.progress_updated.emit("Downloaded: " + d.get("filename", ""))
