@@ -1,9 +1,9 @@
 [Desktop Entry]
-Version=1.0
+Version=2.8
 Type=Application
 Name=Vidown
 Comment=Video downloader application
-Exec=Exec=/bin/sh -c "$HOME/vidown/vidown"
+Exec=/bin/sh -c "$HOME/vidown/vidown"
 Icon=vidown.png
 Terminal=false
 Categories=Network;Video;
