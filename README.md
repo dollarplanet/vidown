@@ -22,21 +22,21 @@ A simple video downloader application built with Python and tkinter GUI.
 ### Windows
 
 1. Download the latest release from the releases page
-2. Extract the `vidown-windows.zip` file
+2. Extract the `vidown-vX.X-windows.zip` file
 3. Run `vidown.exe`
 
 ### Linux (Ubuntu/Debian)
 
 #### Option 1: Using Pre-built Package
 
-1. Download `vidown-linux.zip` from the releases page
+1. Download `vidown-vX.X-linux.tar.xz` from the releases page
 2. Extract the archive:
    ```bash
-   unzip vidown-linux.zip
+   tar vidown-vX.X-linux.tar.xz
    ```
 3. Navigate to the extracted folder:
    ```bash
-   cd vidown-linux
+   cd vidown
    ```
 4. Make the executable runnable:
    ```bash
