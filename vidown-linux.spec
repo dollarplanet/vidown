@@ -38,7 +38,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('icon.png', '.'),
+        ('vidown.png', '.'),
         ('vidown.desktop', '.'),
     ] + collect_data_files('yt_dlp'),
     hiddenimports=yt_modules + tkinter_modules,
@@ -72,7 +72,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='icon.png',
+    icon='vidown.png',
 )
 
 coll = COLLECT(

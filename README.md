@@ -57,7 +57,7 @@ A simple video downloader application built with Python and tkinter GUI.
 3. Copy the desktop file and icon:
    ```bash
    cp vidown/_internal/vidown.desktop ~/.local/share/applications/
-   cp vidown/_internal/icon.png ~/.local/share/icons/
+   cp vidown/_internal/vidown.png ~/.local/share/icons/
    ```
 3. Move folder to home:
    ```bash
