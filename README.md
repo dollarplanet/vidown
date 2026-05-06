@@ -40,11 +40,11 @@ A simple video downloader application built with Python and tkinter GUI.
    ```
 4. Make the executable runnable:
    ```bash
-   chmod +x vidown/vidown
+   chmod +x vidown
    ```
 5. Run the application:
    ```bash
-   ./vidown/vidown
+   ./vidown
    ```
 
 #### Option 2: Add to Application Menu
