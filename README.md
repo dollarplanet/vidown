@@ -49,17 +49,25 @@ A simple video downloader application built with Python and tkinter GUI.
 
 #### Option 2: Add to Application Menu
 
-1. Extract and set up as above
-2. Copy the desktop file and icon:
+1. Download `vidown-vX.X-linux.tar.xz` from the releases page
+2. Extract the archive:
    ```bash
-   cp vidown.desktop ~/.local/share/applications/
-   cp icon.png ~/.local/share/icons/
+   tar -xf vidown-vX.X-linux.tar.xz
    ```
-3. Update the desktop database:
+3. Copy the desktop file and icon:
+   ```bash
+   cp vidown/_internal/vidown.desktop ~/.local/share/applications/
+   cp vidown/_internal/icon.png ~/.local/share/icons/
+   ```
+3. Move folder to home:
+   ```bash
+   mv vidown ~/vidown
+   ```
+4. Update the desktop database:
    ```bash
    update-desktop-database ~/.local/share/applications/
    ```
-4. Search for "Vidown" in your application menu
+5. Search for "Vidown" in your application menu
 
 ---
 

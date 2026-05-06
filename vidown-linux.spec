@@ -37,7 +37,10 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=collect_data_files('yt_dlp'),
+    datas=[
+        ('icon.png', '.'),
+        ('vidown.desktop', '.'),
+    ] + collect_data_files('yt_dlp'),
     hiddenimports=yt_modules + tkinter_modules,
     hookspath=[],
     hooksconfig={},
