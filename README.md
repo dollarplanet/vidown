@@ -32,7 +32,7 @@ A simple video downloader application built with Python and tkinter GUI.
 1. Download `vidown-vX.X-linux.tar.xz` from the releases page
 2. Extract the archive:
    ```bash
-   tar vidown-vX.X-linux.tar.xz
+   tar -xf vidown-vX.X-linux.tar.xz
    ```
 3. Navigate to the extracted folder:
    ```bash
