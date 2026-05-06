@@ -10,6 +10,7 @@ SETTINGS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "value.
 class MainWindow:
     def __init__(self):
         self.root = tk.Tk()
+        self.root.wm_class = "Vidown"
         self.root.title("Vidown - YouTube Downloader")
         self.root.resizable(False, False)
         self._start_enabled = False
