@@ -3,7 +3,7 @@ Version=1.0
 Type=Application
 Name=Vidown
 Comment=Video downloader application
-Exec=~/vidown/vidown
+Exec=Exec=/bin/sh -c "$HOME/vidown/vidown"
 Icon=icon.png
 Terminal=false
 Categories=Network;Video;
