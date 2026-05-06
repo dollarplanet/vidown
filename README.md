@@ -138,7 +138,9 @@ pip install yt-dlp pyinstaller
 ### Build
 
 ```bash
-pyinstaller vidown.spec
+pyinstaller vidown-windows.spec
+
+pyinstaller vidown-linux.spec
 ```
 
 ---
