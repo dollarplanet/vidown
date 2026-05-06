@@ -4,10 +4,8 @@ from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
 block_cipher = None
 
-# Collect yt-dlp modules (this should work)
 yt_modules = collect_submodules('yt_dlp')
 
-# Tkinter modules (std lib, hardcoded list since it's always available in Python builds with tkinter)
 tkinter_modules = [
     'tkinter',
     'tkinter.__init__',
@@ -26,11 +24,9 @@ tkinter_modules = [
     'tkinter.tksimplebeg',
 ]
 
-# Get all available modules (in case collect_submodules works)
 try:
     import tkinter
     tk_modules = collect_submodules('tkinter')
-    # Add any additional found modules
     for mod in tk_modules:
         if mod not in tkinter_modules:
             tkinter_modules.append(mod)
@@ -73,7 +69,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='icon.png',
+    icon='icon.ico',
 )
 
 coll = COLLECT(
